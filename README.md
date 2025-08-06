@@ -1,4 +1,6 @@
-# nginx_ensite and nginx_dissite for quick virtual host enabling and disabling
+# `nginx_ensite` / `nginx_dissite`
+
+Quickly enable/disable nginx sites.
 
 ## Description
 
@@ -17,11 +19,15 @@ directories. This is particularly useful not only to those on Mac, but
 also in a microservice approach where each service has it's own vhost
 configuration, for example.
 
-Th deafult startup program is `service`. Feel free to pass another
-program. For example using nginx to send a `SIGHUP` to reload the
+The default startup program is `systemctl`. Feel free to pass another
+program. For example, using nginx to send a `SIGHUP` to reload the
 configuration you just pass the option `-s nginx` to the script.
 
 ## Installation
+
+### Debian package
+
+TKTK
 
 ### Automatic
 
@@ -35,7 +41,14 @@ sudo make install
 
 Just drop the script and the symbolic link in `/usr/sbin` or other
 location appropriate for your system. Meaning: `cp nginx_* /usr/sbin`.
-That's it you're done.
+
+#### Manpages
+
+Two UNIX manual pages are included in the man directory. They should
+be copied to a proper directory in your system. Something along the
+lines of `/usr/share/man/man8` or `/usr/local/share/man/man8`.
+
+## Usage
 
 Note that the script assumes a specific file system topology for your
 `nginx` configuration. Here's the rundown:
@@ -97,23 +110,11 @@ To make use of it you should:
     scripts. `/etc/bash_completion.d/` is the location in Debian
     (hence also in Ubuntu) of Bash completion scripts.
 
-## Manual pages
-
-Two UNIX manual pages are included in the man directory. They should
-be copied to a proper directory in your system. Something along the
-lines of `/usr/share/man/man8` or `/usr/local/share/man/man8`.
-
-Here's an [online](http://github.perusio.org/nginx_ensite/) version of
-the manpage.
-
-
-## Security & Trust
-
-The script is signed with my GPG key. Just do `gpg --keyserver
-keys.gnupg.net --recv-keys 4D722217`. Verify by issuing `gpg --verify
-nginx_ensite.sig`.
-
 ## Acknowledgments
 
 Thanks to the many people that have contributed to this script. You're
 the stuff Free Software is made of.
+
+## License
+
+MIT; see the [LICENSE](LICENSE) file for details.

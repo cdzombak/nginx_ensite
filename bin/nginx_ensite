@@ -44,7 +44,7 @@ fi
 NGINX_CONF_DIR=/etc/nginx
 
 function print_usage() {
-    echo "$SCRIPTNAME [-c <nginx configuration base directory> default: /etc/nginx] [ -s <startup program name> default: service nginx reload] <site name>"
+    echo "$SCRIPTNAME [-c <nginx configuration base directory> default: /etc/nginx] [-s <startup program name> default: systemctl reload nginx] [-r|--reload] <site name>"
 }
 
 ## Extract the startup program name from a given argument. If it's a
@@ -57,7 +57,11 @@ function get_startup_program_name() {
     if [[ $1 =~ [[:alnum:]/-]]+nginx$ ]]; then
         value="$1 -s reload"
     elif [ -z "$1" ]; then
-        value="service nginx reload"
+        if command -v systemctl >/dev/null 2>&1; then
+            value="systemctl reload nginx"
+        else
+            value="service nginx reload"
+        fi
     else
         value=$1
     fi
@@ -85,13 +89,16 @@ if [ "$ACTION" == "UNKNOWN" ]; then
 fi
 
 ## Check the number of arguments.
-if [ $# -lt 1 -o $# -gt 5 ]; then
+if [ $# -lt 1 -o $# -gt 6 ]; then
     print_usage >&2
     exit 3
 fi
 
+## Initialize reload flag
+RELOAD_FLAG=0
+
 ## Parse the getops arguments.
-while getopts c:s: OPT; do
+while getopts c:s:r-: OPT; do
     case $OPT in
         c|+c)
             NGINX_CONF_DIR=$(realpath "$OPTARG")
@@ -102,6 +109,20 @@ while getopts c:s: OPT; do
             ;;
         s|+s)
             STARTUP_PROGRAM_NAME=$(get_startup_program_name "$OPTARG")
+            ;;
+        r|+r)
+            RELOAD_FLAG=1
+            ;;
+        -)
+            case $OPTARG in
+                reload)
+                    RELOAD_FLAG=1
+                    ;;
+                *)
+                    print_usage >&2
+                    exit 4
+                    ;;
+            esac
             ;;
         *)
             print_usage >&2
@@ -169,8 +190,19 @@ case $ACTION in
             fi
             if [ $STATUS -eq 0 ]; then
                 echo "Site $1 has been enabled."
-                # printf '\nRun "%s" to apply the changes.\n' $STARTUP_PROGRAM_NAME
-                echo "Run '$STARTUP_PROGRAM_NAME' to apply the changes."
+                if [ $RELOAD_FLAG -eq 1 ]; then
+                    echo "Reloading nginx..."
+                    eval "$STARTUP_PROGRAM_NAME"
+                    if [ $? -eq 0 ]; then
+                        echo "Nginx reloaded successfully."
+                    else
+                        echo "Failed to reload nginx." >&2
+                        exit 8
+                    fi
+                else
+                    # printf '\nRun "%s" to apply the changes.\n' $STARTUP_PROGRAM_NAME
+                    echo "Run '$STARTUP_PROGRAM_NAME' to apply the changes."
+                fi
                 exit 0
             else
                 rm $SITE_ENABLED
@@ -192,8 +224,19 @@ case $ACTION in
         if [ -h $SITE_ENABLED ]; then
             rm $SITE_ENABLED
             echo "Site $1 has been disabled."
-            # printf '\nRun "%s" to apply the changes.\n' $STARTUP_PROGRAM_NAME
-            echo "Run '$STARTUP_PROGRAM_NAME' to apply the changes."
+            if [ $RELOAD_FLAG -eq 1 ]; then
+                echo "Reloading nginx..."
+                eval "$STARTUP_PROGRAM_NAME"
+                if [ $? -eq 0 ]; then
+                    echo "Nginx reloaded successfully."
+                else
+                    echo "Failed to reload nginx." >&2
+                    exit 8
+                fi
+            else
+                # printf '\nRun "%s" to apply the changes.\n' $STARTUP_PROGRAM_NAME
+                echo "Run '$STARTUP_PROGRAM_NAME' to apply the changes."
+            fi
             exit 0
         else
             echo "Site $1 doesn't exist." >&2
