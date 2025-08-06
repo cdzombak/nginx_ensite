@@ -32,6 +32,10 @@ share/man/man8/nginx_dissite.8.gz: share/man/man8/nginx_dissite.8
 .PHONY: build/man
 build/man: share/man/man8/nginx_ensite.8.gz share/man/man8/nginx_dissite.8.gz ## Build manpages to share/man
 
+.PHONY: lint
+lint: ## Run shellcheck on shell scripts
+	shellcheck bin/nginx_ensite
+
 .PHONY: clean
 clean: ## Remove temporary build products
 	rm -rf out/

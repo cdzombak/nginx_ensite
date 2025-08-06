@@ -72,9 +72,52 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      # TODO(cdzombak): shellcheck
-      # TODO(cdzombak): verify manpage is built correctly
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck ronn
+
+      - name: Run shellcheck
+        run: make lint
+
+      - name: Build manpages
+        run: make build/man
+
+      - name: Verify git status is clean (manpages checked in)
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Error: Git status is not clean after building manpages"
+            echo "The following files are modified or untracked:"
+            git status --porcelain
+            echo ""
+            echo "Please ensure all generated manpage files are checked into git"
+            exit 1
+          fi
+
+      - name: Verify manpages are built correctly
+        run: |
+          # Verify manpages exist and are not empty
+          if [ ! -s share/man/man8/nginx_ensite.8.gz ]; then
+            echo "Error: nginx_ensite.8.gz is missing or empty"
+            exit 1
+          fi
+          if [ ! -s share/man/man8/nginx_dissite.8.gz ]; then
+            echo "Error: nginx_dissite.8.gz is missing or empty"
+            exit 1
+          fi
+          # Verify manpages can be read by man
+          if ! man ./share/man/man8/nginx_ensite.8.gz > /dev/null 2>&1; then
+            echo "Error: nginx_ensite.8.gz cannot be processed by man"
+            exit 1
+          fi
+          if ! man ./share/man/man8/nginx_dissite.8.gz > /dev/null 2>&1; then
+            echo "Error: nginx_dissite.8.gz cannot be processed by man"
+            exit 1
+          fi
+
 
   actionlint:
     name: actionlint
@@ -106,7 +149,7 @@ jobs:
           gem install --no-document fpm -v "$FPM_VERSION"
 
       - name: Build package
-        run: make package
+        run: make build/package
       - name: Prepare release artifacts
         working-directory: out/
         run: |
