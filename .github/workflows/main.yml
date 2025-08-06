@@ -124,7 +124,8 @@ jobs:
           fi
 
           # Test that nginx_dissite resolves correctly using MANPATH
-          export MANPATH="$(pwd)/share/man:$MANPATH"
+          MANPATH="$(pwd)/share/man:$MANPATH"
+          export MANPATH
           if ! man nginx_dissite > /dev/null 2>&1; then
             echo "Warning: nginx_dissite manpage cannot be resolved via MANPATH (this may be a limitation of the CI environment)"
             echo "Content of nginx_dissite.8.gz:"
