@@ -25,9 +25,25 @@ configuration you just pass the option `-s nginx` to the script.
 
 ## Installation
 
-### Debian package
+### Debian via apt repository
 
-TKTK
+[Install my Debian repository](https://www.dzombak.com/blog/2025/06/updated-instructions-for-installing-my-debian-package-repositories/) if you haven't already:
+
+```shell
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://dist.cdzombak.net/keys/dist-cdzombak-net.gpg -o /etc/apt/keyrings/dist-cdzombak-net.gpg
+sudo chmod 644 /etc/apt/keyrings/dist-cdzombak-net.gpg
+sudo mkdir -p /etc/apt/sources.list.d
+sudo curl -fsSL https://dist.cdzombak.net/cdzombak-oss.sources -o /etc/apt/sources.list.d/cdzombak-oss.sources
+sudo chmod 644 /etc/apt/sources.list.d/cdzombak-oss.sources
+sudo apt update
+```
+
+Then install `nginx-ensite` via `apt`:
+
+```shell
+sudo apt install nginx-ensite
+```
 
 ### Automatic
 
