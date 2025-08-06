@@ -228,7 +228,7 @@ jobs:
       - name: Download binaries & packages
         uses: actions/download-artifact@v4
         with:
-          name: ${{ needs.meta.outputs.bin_name }} Binary Artifacts
+          name: ${{ needs.meta.outputs.bin_name }} Artifacts
           path: out
       - name: List artifacts
         run: ls -R
