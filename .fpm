@@ -1,0 +1,7 @@
+-s dir
+--name nginx_ensite
+--description "Quickly enable/disable nginx sites"
+--url "https://github.com/cdzombak/nginx-ensite"
+--maintainer "Chris Dzombak <https://www.dzombak.com>"
+--license MIT
+-a all

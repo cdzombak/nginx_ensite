@@ -1,16 +1,18 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "NGINX_ENSITE" "8" "June 2015" "" ""
+.TH "NGINX_ENSITE" "8" "August 2025" "" ""
 .
 .SH "NAME"
 \fBnginx_ensite\fR \- enable/disable an nginx site/virtual host
 .
 .SH "SYNOPSIS"
-\fBnginx_ensite\fR \fB\-c\fR [ \fInginx configuration directory\fR ] \fB\-s\fR [ \fIstartup program name\fR ] [ \fIsite\fR ]\.\.\.
+\fBnginx_ensite\fR [\fB\-c\fR \fInginx configuration directory\fR] [\fB\-s\fR \fIstartup program name\fR] [\fB\-r|\-\-reload\fR] \fIsite\fR \.\.\.
 .
 .br
-\fBnginx_dissite\fR \fB\-c\fR [ \fInginx configuration directory\fR ] \fB\-s\fR [ \fIstartup program name\fR ] [ \fIsite\fR ]\.\.\.
+.
+.P
+\fBnginx_dissite\fR [\fB\-c\fR \fInginx configuration directory\fR] [\fB\-s\fR \fIstartup program name\fR] [\fB\-r|\-\-reload\fR] \fIsite\fR \.\.\.
 .
 .br
 .
@@ -21,7 +23,7 @@ This manual page documents briefly the nginx_ensite and nginx_dissite commands\.
 nginx_ensite is a script that \fBenables\fR the specified site which is included in a http block within the nginx configuration\.
 .
 .br
-qIt does this by creating symlinks within the subdirectory \fBsites\-enabled\fR of the nginx configuration directory (default: \fB/etc/nginx\fR)\.
+It does this by creating symlinks within the subdirectory \fBsites\-enabled\fR of the nginx configuration directory (default: \fB/etc/nginx\fR)\.
 .
 .P
 Likewise, nginx_dissite disables a site by removing those symlinks\. It is not an error to enable a site which is already enabled,
@@ -42,6 +44,9 @@ Note that the program must be on the search path available to \fBnginx_ensite\fR
 .
 .br
 If that not\'s the case then you need to pass the full path to the startup program executable\.
+.
+.IP "\(bu" 4
+\fB\-r\fR | \fB\-\-reload\fR Executes the reload command after enabling/disabling the site\.
 .
 .IP "" 0
 .
@@ -119,10 +124,19 @@ Default directory with links to the files in \fBsites\-available\fR for enabled 
 a2ensite(8), a2dissite(8), nginx(1)
 .
 .SH "COPYRIGHT"
-nginx_ensite is Copyright (C) 2010\-2015 Antonio P\. P\. Almeida <appa@perusio\.net> under the terms of a MIT license\.
+nginx_ensite is copyright (C) 2010\-2015 Antonio P\. P\. Almeida \fIappa@perusio\.net\fR\.
+.
+.P
+Modifications are copyright (C) 2025 Chris Dzombak \fIchris@dzombak\.com\fR\.
+.
+.P
+nginx_ensite is distributed under the MIT License\.
 .
 .SH "AVAILABILITY"
-The latest version of nginx_ensite is available from: \fIhttps://github\.com/perusio/nginx_ensite\fR\.
+The latest version of nginx_ensite is available from: \fIhttps://github\.com/cdzombak/nginx_ensite\fR\.
 .
 .SH "AUTHOR"
-nginx_ensite was written by Antonio P\. P\. Almeida <appa@perusio\.net> that also wrote the manual page based on the \fBa2ensite\fR manual page by Stefan Fritsch <sf@debian\.org> for the Debian GNU/Linux distribution\.
+nginx_ensite was written by Antonio P\. P\. Almeida \fIappa@perusio\.net\fR that also wrote the manual page based on the \fBa2ensite\fR manual page by Stefan Fritsch \fIsf@debian\.org\fR for the Debian GNU/Linux distribution\.
+.
+.P
+Modified by Chris Dzombak \fIchris@dzombak\.com\fR in 2025\.

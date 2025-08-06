@@ -1,61 +1,52 @@
 SHELL=/usr/bin/env bash
+
 NAME=nginx_ensite
-VERSION=1.0.0
-AUTHOR=perusio
+AUTHOR=cdzombak
 URL=https://github.com/$(AUTHOR)/$(NAME)
-UPDATE_URL=https://raw.githubusercontent.com/$(AUTHOR)/$(NAME)/master
-UPDATE_FILES={{versions,stable}.txt,checksums.{md5,sha1,sha256,sha512}}
+VERSION=$(shell ./.version.sh)
+PKG_NAME=$(NAME)-$(VERSION)
 
 DIRS=bin share
 INSTALL_DIRS=`find $(DIRS) -type d`
 INSTALL_FILES=`find $(DIRS) -type f`
 DOC_FILES=*.ronn
-
-PKG_DIR=pkg
-PKG_NAME=$(NAME)-$(VERSION)
-PKG=$(PKG_DIR)/$(PKG_NAME).tar.gz
-SIG=$(PKG_DIR)/$(PKG_NAME).asc
-
 PREFIX?=/usr/local
 DOC_DIR=$(PREFIX)/share/doc/$(PKG_NAME)
 COMPLETION_DIR=/etc/bash_completion.d
-CURR_DIR=`pwd`
 
-pkg:
-	mkdir $(PKG_DIR)
+default: help
+.PHONY: help  # via https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
+help: ## Print help
+	@grep -E '^[a-zA-Z_-\/]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 share/man/man8/nginx_ensite.8: doc/man/nginx_ensite.8.ronn
-	ronn --pipe doc/man/nginx_ensite.8.ronn > share/man/man8/nginx_ensite.8
+	ronn --roff doc/man/nginx_ensite.8.ronn
+	cp doc/man/nginx_ensite.8 share/man/man8/nginx_ensite.8
 
-man: doc/man/nginx_ensite.8.ronn share/man/man8/nginx_ensite.8
-	git add doc/man/nginx_ensite.8.ronn share/man/man8/nginx_ensite.8 share/man/man8/nginx_dissite.8
-	git commit
+share/man/man8/nginx_ensite.8.gz: share/man/man8/nginx_ensite.8
+	gzip -kf share/man/man8/nginx_ensite.8
 
-download: pkg
-	wget -O $(PKG) $(URL)/archive/v$(VERSION).tar.gz
+share/man/man8/nginx_dissite.8.gz: share/man/man8/nginx_dissite.8
+	gzip -kf share/man/man8/nginx_dissite.8
 
-build: pkg
-	git archive --output=$(PKG) --prefix=$(PKG_NAME)/ HEAD
+.PHONY: build/man
+build/man: share/man/man8/nginx_ensite.8.gz share/man/man8/nginx_dissite.8.gz ## Build manpages to share/man
 
-sign: $(PKG)
-	gpg --sign --detach-sign --armor $(PKG)
-	git add $(PKG).sig
-	git commit $(PKG).sig -m "Added PGP signature for v$(VERSION)"
-	git push origin master
+.PHONY: clean
+clean: ## Remove temporary build products
+	rm -rf out/
 
-clean:
-	rm -f $(PKG) $(SIG)
+.PHONY: build/package
+build/package: build/man ## Build package to ./out
+	mkdir -p out
+	fpm -t deb -v ${VERSION} -p ./out/${NAME}-${VERSION}-all.deb \
+		./bin/=/usr/bin/ \
+		./share/man/man8/nginx_ensite.8.gz=/usr/share/man/man8/nginx_ensite.8.gz \
+		./share/man/man8/nginx_dissite.8.gz=/usr/share/man/man8/nginx_dissite.8.gz \
+		./bash_completion.d/=/usr/share/bash-completion/completions/
 
-all: $(PKG) $(SIG)
-
-tag:
-	git push
-	git tag -s -m "Releasing $(VERSION)" v$(VERSION)
-	git push --tags
-
-release: tag download sign
-
-install:
+.PHONY: install
+install: ## Install (default to /usr/local)
 	for dir in $(INSTALL_DIRS); do mkdir -p $(DESTDIR)$(PREFIX)/$$dir; done
 	for file in $(INSTALL_FILES); do cp $$file $(DESTDIR)$(PREFIX)/$$file; done
 	(cd $(DESTDIR)$(PREFIX)/bin && test -L nginx_dissite || ln -s nginx_ensite nginx_dissite)
@@ -64,9 +55,8 @@ install:
 	mkdir -p $(COMPLETION_DIR)
 	cp bash_completion.d/* $(COMPLETION_DIR)/
 
-uninstall:
+.PHONY: uninstall
+uninstall: ## Uninstall (default from /usr/local)
 	for file in $(INSTALL_FILES); do rm -f $(DESTDIR)$(PREFIX)/$$file; done
 	rm -rf $(DESTDIR)$(DOC_DIR)
 	rm $(COMPLETION_DIR)/$(NAME)
-
-.PHONY: build man update download sign verify clean check test tag release rpm install uninstall all
