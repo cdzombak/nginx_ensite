@@ -48,7 +48,7 @@ sudo apt install nginx-ensite
 ### Automatic
 
 ```
-git clone https://github.com/perusio/nginx_ensite.git
+git clone https://github.com/cdzombak/nginx_ensite.git
 cd nginx_ensite
 sudo make install
 ```
